@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home-container">
+    <div class="welcome-message">
+        <h2>Bem-vindo ao Sistema de Consulta de Projetos</h2>
+        <p>Navegue pelos projetos de engenharia usando os filtros disponíveis.</p>
+    </div>
+    
+    <div class="actions">
+        <a href="{{ url_for('listar_projetos') }}" class="btn btn-primary btn-large">
+            📋 Listar Todos os Projetos
+        </a>
+    </div>
+    
+    <div class="info-box">
+        <p><strong>Total de Projetos:</strong> {{ total_projetos }}</p>
+        <p>Use os filtros para encontrar projetos específicos por autor, local, data, assunto, etc.</p>
+    </div>
+</div>
+{% endblock %}

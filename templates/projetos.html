@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="projetos-container">
+    <div class="page-header">
+        <h2>Consulta de Projetos</h2>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">← Voltar</a>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="filtros-section">
+        <h3 class="filtros-title">🔍 FILTROS:</h3>
+        
+        <form method="GET" action="{{ url_for('listar_projetos') }}" class="filtros-form">
+            <div class="filtros-grid">
+                <!-- Linha 1 -->
+                <div class="filtro-group">
+                    <label>ID do Projeto:</label>
+                    <input type="number" name="id_projen" value="{{ filtros.get('id_projen', '') }}" 
+                           placeholder="Digite o ID" min="1">
+                </div>
+                
+                <div class="filtro-group">
+                    <label>Nº de Chamada:</label>
+                    <input type="text" name="n_chamada" value="{{ filtros.get('n_chamada', '') }}" 
+                           placeholder="Número de chamada">
+                </div>
+                
+                <!-- Linha 2 - Autor -->
+                <div class="filtro-group">
+                    <label>Autor:</label>
+                    <select name="autor_id" class="select2-autor">
+                        <option value="">Selecione um autor...</option>
+                        {% for autor in autores %}
+                        <option value="{{ autor.id_autor }}" 
+                                {% if filtros.get('autor_id')|string == autor.id_autor|string %}selected{% endif %}>
+                            {{ autor.nome_autor }} ({{ autor.tipo_autor }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <select name="autor_tipo">
+                        <option value="todos" {% if filtros.get('autor_tipo') == 'todos' %}selected{% endif %}>Todos os tipos</option>
+                        <option value="primario" {% if filtros.get('autor_tipo') == 'primario' %}selected{% endif %}>Apenas Primário</option>
+                        <option value="secundario" {% if filtros.get('autor_tipo') == 'secundario' %}selected{% endif %}>Apenas Secundário</option>
+                    </select>
+                </div>
+                
+                <!-- Linha 3 - Local e Data -->
+                <div class="filtro-group">
+                    <label>Local:</label>
+                    <select name="local_id">
+                        <option value="">Todos os locais...</option>
+                        {% for local in locais %}
+                        <option value="{{ local.id_local }}" 
+                                {% if filtros.get('local_id')|string == local.id_local|string %}selected{% endif %}>
+                            {{ local.nome_local }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filtro-group">
+                    <label>Data (Mês/Ano):</label>
+                    <div class="date-inputs">
+                        <input type="number" name="mes" value="{{ filtros.get('mes', '') }}" 
+                               placeholder="Mês (1-12)" min="1" max="12">
+                        <input type="number" name="ano" value="{{ filtros.get('ano', datetime.now().year) }}" 
+                               placeholder="Ano" min="1900" max="2100">
+                    </div>
+                </div>
+                
+                <!-- Linha 4 - Conteúdo e Executor -->
+                <div class="filtro-group">
+                    <label>Conteúdo:</label>
+                    <select name="conteudo" class="select2-conteudo">
+                        <option value="">Selecione um conteúdo...</option>
+                        {% for conteudo in conteudos %}
+                        <option value="{{ conteudo }}" 
+                                {% if filtros.get('conteudo') == conteudo %}selected{% endif %}>
+                            {{ conteudo[:50] }}{% if conteudo|length > 50 %}...{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filtro-group">
+                    <label>Executor:</label>
+                    <select name="executor_id">
+                        <option value="">Todos os executores...</option>
+                        {% for executor in executores %}
+                        <option value="{{ executor.id_executor }}" 
+                                {% if filtros.get('executor_id')|string == executor.id_executor|string %}selected{% endif %}>
+                            {{ executor.nome_executor }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Linha 5 - Assunto e Setor -->
+                <div class="filtro-group">
+                    <label>Assunto:</label>
+                    <select name="assunto_id">
+                        <option value="">Todos os assuntos...</option>
+                        {% for assunto in assuntos %}
+                        <option value="{{ assunto.id_assunto }}" 
+                                {% if filtros.get('assunto_id')|string == assunto.id_assunto|string %}selected{% endif %}>
+                            {{ assunto.nome_assunto }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filtro-group">
+                    <label>Setor:</label>
+                    <select name="setor_id">
+                        <option value="">Todos os setores...</option>
+                        {% for setor in setores %}
+                        <option value="{{ setor.id_setor }}" 
+                                {% if filtros.get('setor_id')|string == setor.id_setor|string %}selected{% endif %}>
+                            {{ setor.nome_setor }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
+                <a href="{{ url_for('listar_projetos') }}" class="btn btn-secondary">Limpar Filtros</a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Resultados -->
+    <div class="resultados-section">
+        <h3>Resultados ({{ projetos|length }} projetos encontrados)</h3>
+        
+        {% if projetos %}
+        <div class="projetos-list">
+            {% for projeto in projetos %}
+            <div class="projeto-card">
+                <div class="projeto-header">
+                    <h4>#{{ projeto.id_projen }} - {{ projeto.titulo_projen }}</h4>
+                    <span class="projeto-chamada">{{ projeto.n_chamada_projen }}</span>
+                </div>
+                
+                <div class="projeto-details">
+                    <p><strong>Data:</strong> {{ projeto.data_projen.strftime('%d/%m/%Y') if projeto.data_projen else 'N/A' }}</p>
+                    <p><strong>Local:</strong> {{ projeto.local.nome_local if projeto.local else 'N/A' }}</p>
+                    <p><strong>Setor:</strong> {{ projeto.setor.nome_setor if projeto.setor else 'N/A' }}</p>
+                    
+                    <div class="projeto-tags">
+                        {% if projeto.autores %}
+                        <span class="tag">👥 Autores: {{ projeto.autores|map(attribute='nome_autor')|join(', ') }}</span>
+                        {% endif %}
+                        {% if projeto.assuntos %}
+                        <span class="tag">🏷️ Assuntos: {{ projeto.assuntos|map(attribute='nome_assunto')|join(', ') }}</span>
+                        {% endif %}
+                        {% if projeto.executores %}
+                        <span class="tag">🛠️ Executores: {{ projeto.executores|map(attribute='nome_executor')|join(', ') }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="projeto-conteudo">
+                        <strong>Conteúdo:</strong> 
+                        {% if projeto.conteudo_projen %}
+                            {{ projeto.conteudo_projen[:200] }}{% if projeto.conteudo_projen|length > 200 %}...{% endif %}
+                        {% else %}
+                            Não disponível
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-results">
+            <p>Nenhum projeto encontrado com os filtros aplicados.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Inicializar Select2 para autores
+    $('.select2-autor').select2({
+        placeholder: "Selecione um autor...",
+        allowClear: true,
+        language: "pt-BR",
+        width: '100%'
+    });
+    
+    // Inicializar Select2 para conteúdos
+    $('.select2-conteudo').select2({
+        placeholder: "Selecione um conteúdo...",
+        allowClear: true,
+        language: "pt-BR",
+        width: '100%'
+    });
+});
+</script>
+{% endblock %}
