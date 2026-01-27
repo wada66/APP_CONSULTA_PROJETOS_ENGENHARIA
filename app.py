@@ -43,7 +43,7 @@ def listar_projetos():
         projetos = projetos.filter(Projen.n_chamada_projen.like(f"%{request.args['n_chamada']}%"))
         filtros['n_chamada'] = request.args['n_chamada']
     
-    # Filtro por Autor - VERSÃO 100% FUNCIONAL
+    # Filtro por Autor - VERSÃO CORRIGIDA E FUNCIONAL
     if 'autor_id' in request.args and request.args['autor_id']:
         try:
             autor_id_int = int(request.args['autor_id'])
@@ -51,56 +51,37 @@ def listar_projetos():
             
             print(f"\n🎯 FILTRO AUTOR ATIVADO")
             print(f"   Autor ID: {autor_id_int}")
-            print(f"   Tipo solicitado: '{autor_tipo}'")
+            print(f"   Tipo: '{autor_tipo}'")
             
-            # DEBUG: Verificar o autor
+            # Buscar o autor para verificar se existe
             autor = Autor.query.get(autor_id_int)
-            if autor:
-                print(f"   Autor encontrado: {autor.nome_autor}")
-                print(f"   Tipo deste autor: '{autor.tipo_autor}'")
-            
-            # IMPORTANTE: Quando fazemos JOIN, estamos trazendo TODOS os autores do projeto
-            # Se um projeto tem 3 autores, o JOIN cria 3 linhas
-            # Precisamos de uma abordagem diferente
-            
-            if autor_tipo == 'todos':
-                # Método SIMPLES e FUNCIONAL: subquery
+            if not autor:
+                print(f"   ❌ Autor não encontrado")
+            else:
+                print(f"   ✅ Autor: {autor.nome_autor}")
+                
+                # SEMPRE usar subquery para evitar duplicação de resultados
                 subquery = db.session.query(ProjenAutor.projen_id).filter(
                     ProjenAutor.autor_id == autor_id_int
                 )
+                
+                # Se for filtrar por tipo específico
+                if autor_tipo != 'todos':
+                    # JOIN para garantir que o autor tenha o tipo correto
+                    subquery = subquery.join(
+                        Autor, ProjenAutor.autor_id == Autor.id_autor
+                    ).filter(Autor.tipo_autor == autor_tipo)
+                
+                # Aplicar o filtro
                 projetos = projetos.filter(Projen.id_projen.in_(subquery))
-                print(f"   ✅ Buscando TODOS projetos do autor {autor_id_int}")
-                
-            else:
-                # Método CORRETO para filtrar por tipo
-                # 1. Primeiro, pega todos projetos do autor
-                # 2. Depois filtra pelos que o autor tem o tipo específico
-                
-                # Verificar se este autor TEM o tipo solicitado
-                autor_com_tipo = Autor.query.filter(
-                    Autor.id_autor == autor_id_int,
-                    Autor.tipo_autor == autor_tipo
-                ).first()
-                
-                if autor_com_tipo:
-                    # Autor existe e tem este tipo, buscar seus projetos
-                    subquery = db.session.query(ProjenAutor.projen_id).filter(
-                        ProjenAutor.autor_id == autor_id_int
-                    )
-                    projetos = projetos.filter(Projen.id_projen.in_(subquery))
-                    print(f"   ✅ Autor {autor_id_int} é '{autor_tipo}', buscando seus projetos")
-                else:
-                    # Autor não tem este tipo, não retorna nada
-                    print(f"   ⚠️  Autor {autor_id_int} não é '{autor_tipo}', retornando vazio")
-                    projetos = projetos.filter(False)  # Força resultado vazio
+                print(f"   📊 Query aplicada com sucesso")
             
             filtros['autor_id'] = request.args['autor_id']
-            filtros['autor_tipo'] = autor_tipo
-            
-            print(f"   📊 Query final montada")
-            
+            if autor_tipo != 'todos':
+                filtros['autor_tipo'] = autor_tipo
+                
         except ValueError as e:
-            print(f"   ❌ Erro no ID do autor: {e}")
+            print(f"❌ Erro no ID do autor: {e}")
             pass
     
     # Filtro por Local

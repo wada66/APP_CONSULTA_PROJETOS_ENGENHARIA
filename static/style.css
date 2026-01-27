@@ -281,3 +281,39 @@ header h1 {
 .select2-selection__arrow {
     height: 42px !important;
 }
+
+/* Estilo para o filtro de autor */
+.autor-completo {
+    grid-column: 1 / -1; /* Ocupa linha inteira */
+}
+
+.autor-dual-select {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.autor-dual-select .autor-select {
+    flex: 3; /* 3 partes do espaço */
+}
+
+.autor-dual-select .tipo-select {
+    flex: 1; /* 1 parte do espaço */
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.autor-dual-select .tipo-select:disabled {
+    background-color: #e9ecef;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.help-text {
+    display: block;
+    margin-top: 5px;
+    color: #6c757d;
+    font-size: 0.875em;
+}

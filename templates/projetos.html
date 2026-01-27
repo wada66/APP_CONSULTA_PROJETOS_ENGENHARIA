@@ -33,31 +33,43 @@
                         placeholder="Digite palavras do título..." style="width: 100%;">
                 </div>
 
-                <!-- No filtro de Autor -->
-                <div class="filtro-group">
+                <!-- Linha: Autor com seleção de tipo -->
+                <div class="filtro-group autor-completo">
                     <label>Autor:</label>
-                    <select name="autor_id" class="select2-autor">
-                        <option value="">Selecione um autor...</option>
-                        {% for autor in autores %}
-                        <option value="{{ autor.id_autor }}" 
-                                {% if filtros.get('autor_id')|string == autor.id_autor|string %}selected{% endif %}>
-                            {{ autor.nome_autor }} ({{ autor.tipo_autor }})
-                        </option>
-                        {% endfor %}
-                    </select>
                     
-                    <!-- Select de tipo de autor -->
-                    <select name="autor_tipo">
-                        <option value="todos" {% if filtros.get('autor_tipo', 'todos') == 'todos' %}selected{% endif %}>
-                            Todos os tipos
-                        </option>
-                        <option value="primario" {% if filtros.get('autor_tipo') == 'primario' %}selected{% endif %}>
-                            Apenas Primário
-                        </option>
-                        <option value="secundario" {% if filtros.get('autor_tipo') == 'secundario' %}selected{% endif %}>
-                            Apenas Secundário
-                        </option>
-                    </select>
+                    <!-- Container para os dois selects lado a lado -->
+                    <div class="autor-dual-select">
+                        <!-- Select do Autor -->
+                        <select name="autor_id" class="select2-autor autor-select">
+                            <option value="">Selecione um autor...</option>
+                            {% for autor in autores %}
+                            <option value="{{ autor.id_autor }}" 
+                                    data-tipo="{{ autor.tipo_autor }}"
+                                    {% if filtros.get('autor_id')|string == autor.id_autor|string %}selected{% endif %}>
+                                {{ autor.nome_autor }} ({{ autor.tipo_autor }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        
+                        <!-- Select do Tipo (menor) -->
+                        <select name="autor_tipo" class="tipo-select" 
+                                {% if not filtros.get('autor_id') %}disabled{% endif %}>
+                            <option value="todos" {% if filtros.get('autor_tipo', 'todos') == 'todos' %}selected{% endif %}>
+                                Todos os tipos
+                            </option>
+                            <option value="primario" {% if filtros.get('autor_tipo') == 'primario' %}selected{% endif %}>
+                                Apenas Primário
+                            </option>
+                            <option value="secundario" {% if filtros.get('autor_tipo') == 'secundario' %}selected{% endif %}>
+                                Apenas Secundário
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <!-- Mensagem de ajuda -->
+                    <small class="help-text">
+                        Selecione um autor e escolha o tipo (opcional)
+                    </small>
                 </div>
                 
                 <!-- Linha 3 - Local e Data -->
@@ -214,6 +226,55 @@ $(document).ready(function() {
         allowClear: true,
         language: "pt-BR",
         width: '100%'
+    });
+});
+</script>
+<script>
+$(document).ready(function() {
+    // ========== CÓDIGO EXISTENTE ==========
+    // Inicializar Select2 para autores
+    $('.select2-autor').select2({
+        placeholder: "Selecione um autor...",
+        allowClear: true,
+        language: "pt-BR",
+        width: '100%'
+    });
+    
+    // Inicializar Select2 para conteúdos
+    $('.select2-conteudo').select2({
+        placeholder: "Selecione um conteúdo...",
+        allowClear: true,
+        language: "pt-BR",
+        width: '100%'
+    });
+    
+    // ========== NOVO CÓDIGO PARA AUTORES ==========
+    // Lógica para habilitar/desabilitar o select de tipo
+    const autorSelect = $('select[name="autor_id"]');
+    const tipoSelect = $('select[name="autor_tipo"]');
+    
+    // Ao carregar a página
+    if (!autorSelect.val()) {
+        tipoSelect.prop('disabled', true);
+    }
+    
+    // Quando mudar o autor
+    autorSelect.on('change', function() {
+        if ($(this).val()) {
+            tipoSelect.prop('disabled', false);
+            
+            // Mostrar o tipo do autor selecionado como sugestão
+            const selectedOption = $(this).find('option:selected');
+            const autorTipo = selectedOption.data('tipo');
+            
+            if (autorTipo) {
+                // Mostrar tooltip (opcional)
+                tipoSelect.attr('title', `Este autor é do tipo: ${autorTipo}`);
+            }
+        } else {
+            tipoSelect.prop('disabled', true);
+            tipoSelect.val('todos');
+        }
     });
 });
 </script>
