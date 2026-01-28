@@ -35,7 +35,7 @@
                     </h5>
                     <span class="badge bg-light text-dark">{{ projetos|length }} resultados</span>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-5">
                     <form method="GET" action="{{ url_for('listar_projetos') }}" id="filtrosForm" onsubmit="showLoading()">
                         <div class="row">
                             <!-- Busca Rápida -->
@@ -240,12 +240,6 @@
                                             <i class="fas fa-redo me-1"></i> Limpar Filtros
                                         </a>
                                     </div>
-                                    
-                                    <div>
-                                        <button type="button" class="btn btn-outline-success" onclick="exportarResultados()">
-                                            <i class="fas fa-download me-1"></i> Exportar
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -277,7 +271,7 @@
                     {% endif %}
                 </div>
                 
-                <div class="card-body">
+                <div class="card-body p-5">
                     {% if projetos %}
                     <div class="projetos-list">
                         {% for projeto in projetos %}
